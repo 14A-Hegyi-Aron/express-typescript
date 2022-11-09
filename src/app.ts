@@ -1,3 +1,4 @@
+import { config } from 'dotenv';
 import * as express from 'express';
 import * as morgan from 'morgan';
  
@@ -6,6 +7,7 @@ export default class App {
   public port: number;
  
   constructor(controllers, port: number) {
+    config();
     this.app = express();
     this.port = port;
  
