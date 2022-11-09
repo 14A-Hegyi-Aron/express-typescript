@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 import * as express from 'express';
+import mongoose, { mongo } from 'mongoose';
 import * as morgan from 'morgan';
  
 export default class App {
@@ -8,6 +9,7 @@ export default class App {
  
   constructor(controllers) {
     config();
+    this.connectToDatabase();
     this.app = express();
     this.port = +process.env.PORT;
  
@@ -20,6 +22,22 @@ export default class App {
     this.app.use(morgan('dev'));
   }
  
+  private connectToDatabase() {
+    const {MONGO_URI, MONGO_DB} = process.env;
+    mongoose.connect(MONGO_URI, {dbName: MONGO_DB}, (err) => {
+      if (err) {
+        console.log('Uh Oh');
+        return;
+      }
+    });
+    mongoose.connection.on('error', (err) => {
+      console.log(`Mongoose Error: ${err}`);
+    });
+    mongoose.connection.on('connected', () => {
+      console.log('Connected to MongoDB');
+    });
+  }
+
   private initializeControllers(controllers) {
     controllers.forEach((controller) => {
       this.app.use('/', controller.router);
