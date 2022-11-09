@@ -6,10 +6,10 @@ export default class App {
   public app: express.Application;
   public port: number;
  
-  constructor(controllers, port: number) {
+  constructor(controllers) {
     config();
     this.app = express();
-    this.port = port;
+    this.port = +process.env.PORT;
  
     this.initializeMiddlewares();
     this.initializeControllers(controllers);
