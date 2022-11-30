@@ -1,18 +1,15 @@
-import * as express from "express";
+import PostNotFoundException from "../exceptions/PostNotFoundException";
+import { Request, Response, NextFunction, Router } from "express";
+import Controller from "../interfaces/controller.interface";
 import Post from "./post.interface";
 import postModel from "./post.model";
 
-export default class PostsController {
+export default class PostsController implements Controller {
   public path = "/posts";
-  public router = express.Router();
+  public router = Router();
+  private post = postModel;
 
   private posts: Post[] = [
-    {
-      author: "Béla",
-      content: "i liek tomateos",
-      title: "Béla's first post",
-      canIBeYourFriend: true,
-    },
     // {
     //     author: "Vanöcsi Véged",
     //     content: "(╬▔皿▔)╯ ┻━┻",
@@ -36,32 +33,52 @@ export default class PostsController {
     this.router.post(this.path, this.createPost);
     this.router.get(`${this.path}/:id`, this.getPostById);
     this.router.patch(`${this.path}/:id`, this.modifyPost);
+    this.router.delete(`${this.path}/:id`, this.deletePost);
   }
 
-  getAllPosts = (request: express.Request, response: express.Response) => {
+  getAllPosts = (request: Request, response: Response) => {
     response.send(this.posts);
   };
 
-  createPost = (request: express.Request, response: express.Response) => {
+  createPost = (request: Request, response: Response) => {
     const postData: Post = request.body;
-    const createdPost = new postModel(postData);
+    const createdPost = new this.post(postData);
     createdPost.save().then((savedPost) => {
       response.send(savedPost);
     });
   };
 
-  getPostById = (request: express.Request, response: express.Response) => {
+  getPostById = (request: Request, response: Response, next: NextFunction) => {
     const id = request.params.id;
-    postModel.findById(id).then((post) => {
-      response.send(post);
+    this.post.findById(id).then((post) => {
+      if (post) {
+        response.send(post);
+      } else {
+        next(new PostNotFoundException(id));
+      }
     });
   };
 
-  modifyPost = (request: express.Request, response: express.Response) => {
+  modifyPost = (request: Request, response: Response, next: NextFunction) => {
     const id = request.params.id;
     const postData: Post = request.body;
-    postModel.findByIdAndUpdate(id, postData, { new: true }).then((post) => {
-      response.send(post);
+    this.post.findByIdAndUpdate(id, postData, { new: true }).then((post) => {
+      if (post) {
+        response.send(post);
+      } else {
+        next(new PostNotFoundException(id));
+      }
+    });
+  };
+
+  deletePost = (request: Request, response: Response, next: NextFunction) => {
+    const id = request.params.id;
+    this.post.findByIdAndDelete(id).then((successResponse) => {
+      if (successResponse) {
+        response.send(200);
+      } else {
+        next(new PostNotFoundException(id));
+      }
     });
   };
 }

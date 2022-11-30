@@ -5,7 +5,10 @@ const postSchema = new Schema<IPost>(
   {
     author: String,
     content: String,
-    title: String,
+    title: {
+      type: String,
+      unique: true,
+    },
     canIBeYourFriend: Boolean,
   },
   {
