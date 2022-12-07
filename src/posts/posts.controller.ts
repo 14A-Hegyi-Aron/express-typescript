@@ -3,6 +3,9 @@ import { Request, Response, NextFunction, Router } from "express";
 import Controller from "../interfaces/controller.interface";
 import Post from "./post.interface";
 import postModel from "./post.model";
+import validationMiddleware from "../middleware/validation.middleware";
+import authMiddleware from "../middleware/auth.middleware";
+import { CreatePostDto } from "./post.dto";
 
 export default class PostsController implements Controller {
   public path = "/posts";
@@ -30,7 +33,11 @@ export default class PostsController implements Controller {
 
   public intializeRoutes() {
     this.router.get(this.path, this.getAllPosts);
-    this.router.post(this.path, this.createPost);
+    this.router.post(
+      this.path,
+      [authMiddleware, validationMiddleware(CreatePostDto)],
+      this.createPost
+    );
     this.router.get(`${this.path}/:id`, this.getPostById);
     this.router.patch(`${this.path}/:id`, this.modifyPost);
     this.router.delete(`${this.path}/:id`, this.deletePost);

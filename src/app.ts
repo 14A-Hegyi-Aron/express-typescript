@@ -1,7 +1,8 @@
+import cookieParser from "cookie-parser";
 import { config } from "dotenv";
-import * as express from "express";
+import express from "express";
 import mongoose, { mongo } from "mongoose";
-import * as morgan from "morgan";
+import morgan from "morgan";
 import Controller from "./interfaces/controller.interface";
 import errorMiddleware from "./middleware/error.middleware";
 
@@ -22,6 +23,7 @@ export default class App {
 
   private initializeMiddlewares() {
     this.app.use(express.json());
+    this.app.use(cookieParser());
     this.app.use(morgan("dev"));
   }
 
